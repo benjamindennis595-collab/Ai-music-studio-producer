@@ -238,7 +238,8 @@
         <button class="secondary">▶ Play</button>
         <button class="secondary">⏸ Pause</button>
         <button class="secondary">⏹ Stop</button>
-        <button class="secondary">Upload Demo</button>
+        <input type="file" id="demoUpload" accept="audio/*" hidden>
+<button class="secondary" id="uploadDemoBtn">UPLOAD DEMO</button>
       </div>
 
     </div>
@@ -454,8 +455,35 @@
     }
 
   });
+const demoUpload = document.getElementById("demoUpload");
+const uploadDemoBtn = document.getElementById("uploadDemoBtn");
+
+uploadDemoBtn.onclick = () => {
+  demoUpload.click();
+};
+
+demoUpload.onchange = () => {
+  const file = demoUpload.files[0];
+
+  if (!file) return;
+
+  const audioURL = URL.createObjectURL(file);
+
+  const oldPlayer = document.getElementById("uploadedDemoPlayer");
+  if (oldPlayer) oldPlayer.remove();
+
+  const player = document.createElement("audio");
+  player.id = "uploadedDemoPlayer";
+  player.controls = true;
+  player.src = audioURL;
+  player.style.width = "100%";
+  player.style.marginTop = "15px";
+
+  document.querySelector(".booth").appendChild(player);
+
+  alert("Demo uploaded successfully. Your demo is ready for the AI Producer.");
+};
 </script>
 </body>
-</html>
-      
+</html>    
       
