@@ -200,9 +200,11 @@
         Sing your complete song exactly the way you want it performed.
       </p>
 
-      <button class="record-button">
-        RECORD
-      </button>
+      <button class="record-button" id="recordButton">
+  RECORD
+</button>
+        
+   
 
       <div class="timer">
         00:00
@@ -296,6 +298,68 @@
     </div>
 
   </div>
+<script>
+  let mediaRecorder;
+  let audioChunks = [];
+  let recording = false;
 
+  const recordButton = document.getElementById("recordButton");
+
+  recordButton.addEventListener("click", async () => {
+
+    if (!recording) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: true
+        });
+
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = event => {
+          audioChunks.push(event.data);
+        };
+
+        mediaRecorder.onstop = () => {
+          const audioBlob = new Blob(audioChunks, {
+            type: "audio/webm"
+          });
+
+          const audioURL = URL.createObjectURL(audioBlob);
+
+          const audioPlayer = document.createElement("audio");
+          audioPlayer.controls = true;
+          audioPlayer.src = audioURL;
+          audioPlayer.style.width = "100%";
+          audioPlayer.style.marginTop = "20px";
+
+          document.querySelector(".booth").appendChild(audioPlayer);
+        };
+
+        mediaRecorder.start();
+
+        recording = true;
+        recordButton.textContent = "STOP";
+        recordButton.style.background = "#444";
+
+      } catch (error) {
+        alert("Microphone access was not allowed.");
+        console.error(error);
+      }
+
+    } else {
+
+      mediaRecorder.stop();
+
+      mediaRecorder.stream.getTracks().forEach(track => {
+        track.stop();
+      });
+
+      recording = false;
+      recordButton.textContent = "RECORD";
+      recordButton.style.background = "#b00020";
+    }
+  });
+</script>
 </body>
 </html>
