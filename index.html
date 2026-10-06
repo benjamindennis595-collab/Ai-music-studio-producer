@@ -302,64 +302,162 @@
   let mediaRecorder;
   let audioChunks = [];
   let recording = false;
+  let audioPlayer = null;
+  let audioURL = null;
+  let microphoneStream = null;
 
   const recordButton = document.getElementById("recordButton");
 
   recordButton.addEventListener("click", async () => {
 
     if (!recording) {
+
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: true
+
+        // Request improved microphone recording
+        microphoneStream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+            channelCount: 1,
+            sampleRate: 48000
+          }
         });
 
-        mediaRecorder = new MediaRecorder(stream);
+        const audioTracks = microphoneStream.getAudioTracks();
+
+        console.log("Microphone:", audioTracks[0].label);
+
+        // Use a high-quality audio format when supported
+        let recorderOptions = {};
+
+        if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) {
+          recorderOptions = {
+            mimeType: "audio/webm;codecs=opus",
+            audioBitsPerSecond: 128000
+          };
+        }
+
+        mediaRecorder = new MediaRecorder(
+          microphoneStream,
+          recorderOptions
+        );
+
         audioChunks = [];
 
         mediaRecorder.ondataavailable = event => {
-          audioChunks.push(event.data);
+
+          if (event.data.size > 0) {
+            audioChunks.push(event.data);
+          }
+
         };
 
         mediaRecorder.onstop = () => {
+
           const audioBlob = new Blob(audioChunks, {
-            type: "audio/webm"
+            type: mediaRecorder.mimeType || "audio/webm"
           });
 
-          const audioURL = URL.createObjectURL(audioBlob);
+          audioURL = URL.createObjectURL(audioBlob);
 
-          const audioPlayer = document.createElement("audio");
+          // Create audio player
+          audioPlayer = document.createElement("audio");
+
           audioPlayer.controls = true;
           audioPlayer.src = audioURL;
+
           audioPlayer.style.width = "100%";
           audioPlayer.style.marginTop = "20px";
 
           document.querySelector(".booth").appendChild(audioPlayer);
+
+          // Create DELETE TAKE button
+          const deleteButton = document.createElement("button");
+
+          deleteButton.textContent = "DELETE TAKE";
+
+          deleteButton.style.display = "block";
+          deleteButton.style.margin = "15px auto 0";
+          deleteButton.style.padding = "12px 22px";
+          deleteButton.style.background = "#8b0000";
+          deleteButton.style.color = "white";
+          deleteButton.style.border = "none";
+          deleteButton.style.borderRadius = "8px";
+          deleteButton.style.fontWeight = "bold";
+          deleteButton.style.cursor = "pointer";
+
+          document.querySelector(".booth").appendChild(deleteButton);
+
+          // Delete the recording
+          deleteButton.addEventListener("click", () => {
+
+            if (audioPlayer) {
+              audioPlayer.pause();
+              audioPlayer.remove();
+              audioPlayer = null;
+            }
+
+            if (audioURL) {
+              URL.revokeObjectURL(audioURL);
+              audioURL = null;
+            }
+
+            audioChunks = [];
+
+            deleteButton.remove();
+
+            alert("Take deleted. You can record a fresh take.");
+
+          });
+
         };
 
         mediaRecorder.start();
 
         recording = true;
+
         recordButton.textContent = "STOP";
         recordButton.style.background = "#444";
 
       } catch (error) {
-        alert("Microphone access was not allowed.");
+
         console.error(error);
+
+        alert(
+          "Microphone access failed. Please allow microphone permission and try again."
+        );
+
       }
 
     } else {
 
+      // Stop recording
       mediaRecorder.stop();
 
-      mediaRecorder.stream.getTracks().forEach(track => {
-        track.stop();
-      });
+      // Stop microphone
+      if (microphoneStream) {
+
+        microphoneStream.getTracks().forEach(track => {
+          track.stop();
+        });
+
+        microphoneStream = null;
+      }
 
       recording = false;
+
       recordButton.textContent = "RECORD";
       recordButton.style.background = "#b00020";
+
     }
+
   });
 </script>
-</body>
-</html>
+
+  
+      
+      
+    
+</body> 
