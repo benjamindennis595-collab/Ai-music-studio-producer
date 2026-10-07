@@ -489,7 +489,41 @@ demoUpload.onchange = () => {
 
   alert("Demo uploaded successfully. Your demo is ready for the AI Producer.");
 };
+const produceBtn = document.getElementById("produceBtn");
+const producerStatus = document.getElementById("producerStatus");
+
+produceBtn.onclick = () => {
+  const recordedDemo = document.querySelector("audio");
+  const uploadedDemo = document.getElementById("uploadedDemoPlayer");
+
+  if (!recordedDemo && !uploadedDemo) {
+    alert("Please record or upload your complete demo first.");
+    return;
+  }
+
+  produceBtn.disabled = true;
+  produceBtn.textContent = "PRODUCING...";
+
+  producerStatus.textContent = "Analyzing your demo...";
+
+  setTimeout(() => {
+    producerStatus.textContent = "Detecting melody and tempo...";
+  }, 2000);
+
+  setTimeout(() => {
+    producerStatus.textContent = "Mapping vocal rhythm and song structure...";
+  }, 4000);
+
+  setTimeout(() => {
+    producerStatus.textContent = "Designing the instrumental arrangement...";
+  }, 6000);
+
+  setTimeout(() => {
+    producerStatus.textContent = "AI Producer is ready for the instrumental engine.";
+    produceBtn.disabled = false;
+    produceBtn.textContent = "START AI PRODUCER";
+  }, 8000);
+};
 </script>
-</body>
-</html>    
-      
+</body> 
+</html>
