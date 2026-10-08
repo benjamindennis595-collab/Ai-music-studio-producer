@@ -489,6 +489,30 @@ demoUpload.onchange = () => {
 
   alert("Demo uploaded successfully. Your demo is ready for the AI Producer.");
 };
+
+demoUpload.addEventListener("change", async () => {
+  const file = demoUpload.files[0];
+
+  if (!file) return;
+
+  producerStatus.textContent = "Uploading demo to studio...";
+
+  const fileName = Date.now() + "-" + file.name;
+
+  const { error } = await supabaseClient.storage
+    .from("demo-audio")
+    .upload(fileName, file);
+
+  if (error) {
+    console.error(error);
+    producerStatus.textContent = "Upload failed: " + error.message;
+    alert("Upload failed: " + error.message);
+    return;
+  }
+
+  producerStatus.textContent = "Demo saved to the studio.";
+  alert("Demo uploaded and saved successfully.");
+});
 demoUpload.addEventListener("change", async () => {
   const file = demoUpload.files[0];
 
