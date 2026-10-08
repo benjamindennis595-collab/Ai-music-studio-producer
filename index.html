@@ -502,12 +502,14 @@ demoUpload.addEventListener("change", async () => {
     .from("demo-audio")
     .upload(fileName, file);
 
-  if (error) {
-    console.error(error);
-    producerStatus.textContent = "Upload failed.";
-    alert("Could not upload demo to the studio.");
-    return;
-  }
+ if (error) {
+  console.error(error);
+  producerStatus.textContent = "Upload failed: " + error.message;
+  alert("Upload failed: " + error.message);
+  return;
+}
+    
+  
 
   producerStatus.textContent = "Demo saved to the studio.";
   alert("Demo uploaded and saved successfully.");
